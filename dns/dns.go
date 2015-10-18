@@ -21,8 +21,9 @@ func Updater(config *types.Config) {
 		time.Sleep(time.Duration(config.DNSUpdateFrequency) * time.Second)
 
 		// Lock the host-list (so we don't try to access it when another go-routine is modifying it):
-		log.Tracef("[dnsUpdater] Locking config.HostInventoryMutex...")
+		log.Tracef("[dnsUpdater] Trying to lock config.HostInventoryMutex...")
 		config.HostInventoryMutex.Lock()
+		log.Tracef("[dnsUpdater] Locked config.HostInventoryMutex")
 
 		// See if we actually have any changes to make:
 		if len(config.HostInventory.Environments) > 0 {
@@ -66,8 +67,9 @@ func Cruft(config *types.Config) {
 	for {
 
 		// Lock the host-list (so we don't change it while another goroutine is using it):
+		log.Tracef("[dnsUpdater] Trying to lock config.HostInventoryMutex...")
 		config.HostInventoryMutex.Lock()
-		log.Tracef("[dnsUpdater] Locked config.HostInventoryMutex...")
+		log.Tracef("[dnsUpdater] Locked config.HostInventoryMutex")
 
 		// Show the host-inventory:
 		log.Debugf("[dnsUpdater] HostIventory: %v", config.HostInventory)
