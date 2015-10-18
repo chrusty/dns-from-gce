@@ -7,20 +7,18 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	compute "github.com/chrusty/dns-from-gce/copmute"
+	compute "github.com/chrusty/dns-from-gce/compute"
 )
 
 var (
 	roleTag            = flag.String("roletag", "role", "EC2 instance tag to derive the 'role' from")
 	environmentTag     = flag.String("environmenttag", "environment", "EC2 instance tag to derive the 'environment' from")
 	recordTTL          = flag.Int("recordttl", 300, "TTL for any DNS records created")
-	awsRegion          = flag.String("awsregion", "eu-west-1", "The AWS region to connect to")
-	hostupdate         = flag.Int("hostupdate", 60, "How many seconds to sleep between updating the list of hosts from EC2")
-	dnsupdate          = flag.Int("dnsupdate", 60, "How many seconds to sleep between updating DNS records from the host-list")
-	route53domainName  = flag.String("domainname", "domain.com,", "The Route53 DNS zone to use (including trailing '.')")
+	hostUpdateFreq     = flag.Int("hostupdate", 60, "How many seconds to sleep between updating the list of hosts from EC2")
+	dnsUpdateFreq      = flag.Int("dnsupdate", 60, "How many seconds to sleep between updating DNS records from the host-list")
+	dnsDomainName      = flag.String("domainname", "domain.com,", "The DNS zone to use (including trailing '.')")
 	hostInventoryMutex sync.Mutex
 	hostInventory      HostInventoryDNSRecords
-	route53zoneId      string
 )
 
 func init() {
@@ -36,7 +34,7 @@ func main() {
 	// route53zoneId = getRoute53ZoneId(*route53domainName)
 
 	// Update the host-inventory:
-	go compute.hostInventoryUpdater()
+	go compute.HostInventoryUpdater(*hostUpdateFreq, *roleTag, *environmentTag, *dnsDomainName)
 
 	// Update DNS records for the discovered hosts:
 	// go dnsUpdater()

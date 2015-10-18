@@ -11,7 +11,7 @@ import (
 )
 
 // Store multi-part file (avoids blowing the memory by loading a huge file):
-func hostInventoryUpdater() {
+func HostInventoryUpdater(hostUpdateFrequency int, roleTag, environmentTag, domainName string) {
 
 	log.Infof("[hostInventoryUpdater] Starting up")
 
@@ -166,7 +166,7 @@ func hostInventoryUpdater() {
 		// }
 
 		// Now set the sleep time to the correct value:
-		updateFrequency = *hostupdate
+		updateFrequency = hostUpdateFrequency
 
 	}
 
