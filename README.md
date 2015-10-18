@@ -15,6 +15,7 @@ Populate a Google Cloud-DNS zone from the list of VM Instances in your GCE Proje
   * "webserver.europe-west1-d.i.test.domain.com" => [10.0.3.1]
 
 ## Usage:
+```
 $ ./dns-from-gce -h
 Usage of ./dns-from-gce:
   -dnsttl int
@@ -31,6 +32,7 @@ Usage of ./dns-from-gce:
         Instance metadata key to derive the 'role' from (default "role")
   -zonename string
         The DNS zone-ID to use (defaults to the domain-name)
+```
 
 ## Credentials:
 Credentials can either be derived from a credentials file, or from instance permissions:
