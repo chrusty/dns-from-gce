@@ -117,7 +117,7 @@ func Updater(config *types.Config) {
 						// Continue with the next instance:
 						continue
 					} else {
-						log.Tracef("[hostInventoryUpdater] Building records for instance (%v) in region (%v) ...", instance.Name, regionName)
+						log.Infof("[hostInventoryUpdater] Building records for instance (%v) in zone (%v) ...", instance.Name, googleComputeZone.Name)
 					}
 
 					// Add a new environment to the inventory (unless we already have it):
