@@ -1,31 +1,40 @@
-# dns-from-aws
-Populate a DNS zone from the list of EC2 instances in your AWS account
+# dns-from-gce
+Populate a Google Cloud-DNS zone from the list of VM Instances in your GCE Project
 
 ## Features:
-* Periodically interrogates the EC2 API to retrieve the list of running instances
+* Periodically interrogates the Google Compute API to retrieve the list of running instances
 * Uses instance-tags to determine the "role" and "environment" of each instance
-* Periodically uses this list of instances to populate a DNS zone in Route53
+* Periodically uses this list of instances to populate a DNS zone in Cloud-DNS
 
 ## DNS Records:
 * One internal round-robin A-record per "role" per environment using private IP addresses:
-  * "webserver.us-east-1.i.test.domain.com" => [10.0.1.1, 10.0.2.1, 10.0.3.1]
+  * "webserver.europe-west1.i.test.domain.com" => [10.0.1.1, 10.0.2.1, 10.0.3.1]
 * One internal round-robin A-record per "role" per AZ per environment using private IP addresses:
-  * "database.us-east-1a.i.live.domain.com" => [10.2.1.11]
-* One external round-robin A-record per "role" per environment using public IP addresses:
-  * "gateway.us-east-1.i.staging.domain.com" => [52.12.234.13, 52.12.234.14, 52.12.234.15]
+  * "webserver.europe-west1-b.i.test.domain.com" => [10.0.1.1]
+  * "webserver.europe-west1-c.i.test.domain.com" => [10.0.3.1]
+  * "webserver.europe-west1-d.i.test.domain.com" => [10.0.3.1]
 
-## Flags:
-* awsregion: The AWS region to connect to ("eu-west-1")
-* dnsupdate: How many seconds to sleep between updating DNS records from the host-list (60)
-* domainname: The Route53 DNS zone to use, including trailing '.' ("domain.com.")
-* environmenttag: EC2 instance tag to derive the 'environment' from ("environment")
-* hostupdate: How many seconds to sleep between updating the list of hosts from EC2 (60)
-* recordttl: TTL for any DNS records created (300)
-* roletag: EC2 instance tag to derive the 'role' from ("role")
+## Usage:
+$ ./dns-from-gce -h
+Usage of ./dns-from-gce:
+  -dnsttl int
+        TTL for any DNS records created (default 300)
+  -dnsupdate int
+        How many seconds to sleep between updating DNS records from the host-list (default 60)
+  -domainname string
+        The DNS domain to use (including trailing '.') (default "domain.com.")
+  -environmentkey string
+        Instance metadata key to derive the 'environment' from (default "environment")
+  -hostupdate int
+        How many seconds to sleep between updating the list of hosts from GCE (default 60)
+  -rolekey string
+        Instance metadata key to derive the 'role' from (default "role")
+  -zonename string
+        The DNS zone-ID to use (defaults to the domain-name)
 
-## AWS Credentials:
-Credentials can either be derived from IAM & Instance-profiles, or from exported key-pairs:
-```
-export AWS_ACCESS_KEY='AKAJHSGDJHASGDJHGASJH'
-export AWS_SECRET_KEY='jasdjAJSHJDH9189287321kjskjdhkasjhdkajhsda'
-```
+## Credentials:
+Credentials can either be derived from a credentials file, or from instance permissions:
+* Credentials-file should be '~/.config/gcloud/application_default_credentials.json'
+* Instance permissions required:
+  * Compute.Read (to find the list of running instances)
+  * Still looking for the DNS update permissions
