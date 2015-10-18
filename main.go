@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	compute "github.com/chrusty/dns-from-gce/copmute"
 )
 
 var (
@@ -35,7 +36,7 @@ func main() {
 	// route53zoneId = getRoute53ZoneId(*route53domainName)
 
 	// Update the host-inventory:
-	go hostInventoryUpdater()
+	go compute.hostInventoryUpdater()
 
 	// Update DNS records for the discovered hosts:
 	// go dnsUpdater()
