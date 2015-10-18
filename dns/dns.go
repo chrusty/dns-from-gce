@@ -1,7 +1,6 @@
 package dns
 
 import (
-	"sync"
 	"time"
 
 	log "github.com/cihub/seelog"
@@ -9,15 +8,8 @@ import (
 	types "github.com/chrusty/dns-from-gce/types"
 )
 
-// Configuration object for the DNSUpdater:
-type Config struct {
-	UpdateFrequency    int
-	HostInventory      *types.HostInventory
-	HostInventoryMutex *sync.Mutex
-}
-
 // Periodically populate DNS using the host-inventory:
-func Updater(config Config) {
+func Updater(config *types.Config) {
 
 	log.Infof("[dnsUpdater] Starting up")
 
@@ -25,14 +17,12 @@ func Updater(config Config) {
 	for {
 
 		// Sleep until the next run:
-		log.Debugf("[dnsUpdater] Sleeping for %vs ...", config.UpdateFrequency)
-		time.Sleep(time.Duration(config.UpdateFrequency) * time.Second)
+		log.Debugf("[dnsUpdater] Sleeping for %vs ...", config.DNSUpdateFrequency)
+		time.Sleep(time.Duration(config.DNSUpdateFrequency) * time.Second)
 
 		// Lock the host-list (so we don't try to access it when another go-routine is modifying it):
 		log.Tracef("[dnsUpdater] Locking config.HostInventoryMutex...")
 		config.HostInventoryMutex.Lock()
-
-		log.Tracef("[dnsUpdater] HostIventory: %v", config.HostInventory)
 
 		// See if we actually have any changes to make:
 		if len(config.HostInventory.Environments) > 0 {
@@ -49,7 +39,7 @@ func Updater(config Config) {
 				// Now iterate over the host-inventory:
 				for dnsRecordName, dnsRecordValue := range environment.DNSRecords {
 
-					log.Debug("[dnsUpdater] Record: %v => %v", dnsRecordName, dnsRecordValue)
+					log.Debugf("[dnsUpdater] Record: %v => %v", dnsRecordName, dnsRecordValue)
 
 				}
 
@@ -60,8 +50,36 @@ func Updater(config Config) {
 		}
 
 		// Unlock the host-inventory:
-		log.Tracef("[hostInventoryUpdater] Unlocking config.HostInventoryMutex...")
+		log.Tracef("[dnsUpdater] Unlocking config.HostInventoryMutex...")
 		config.HostInventoryMutex.Unlock()
+
+	}
+
+}
+
+// Test locks:
+func Cruft(config *types.Config) {
+
+	log.Infof("[dnsUpdater] Starting up")
+
+	// Run forever:
+	for {
+
+		// Lock the host-list (so we don't change it while another goroutine is using it):
+		config.HostInventoryMutex.Lock()
+		log.Tracef("[dnsUpdater] Locked config.HostInventoryMutex...")
+
+		// Show the host-inventory:
+		log.Debugf("[dnsUpdater] HostIventory: %v", config.HostInventory)
+
+		// Sleep until the next run:
+		log.Tracef("[dnsUpdater] Sleeping for %vs ...", config.DNSUpdateFrequency)
+		time.Sleep(time.Duration(config.DNSUpdateFrequency) * time.Second)
+
+		log.Tracef("[dnsUpdater] Unlocking config.HostInventoryMutex...")
+		config.HostInventoryMutex.Unlock()
+
+		time.Sleep(time.Duration(1) * time.Second)
 
 	}
 
