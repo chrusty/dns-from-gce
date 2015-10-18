@@ -19,6 +19,8 @@ type Config struct {
 	RoleMetadataKey        string
 	EnvironmentMetadataKey string
 	DNSDomainName          string
+	DNSZoneName            string
+	DNSTTL                 int64
 	HostInventory          HostInventory
 	HostInventoryMutex     sync.Mutex
 }

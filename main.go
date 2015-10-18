@@ -17,15 +17,22 @@ import (
 var (
 	roleMetadataKey        = flag.String("rolekey", "role", "Instance metadata key to derive the 'role' from")
 	environmentMetadataKey = flag.String("environmentkey", "environment", "Instance metadata key to derive the 'environment' from")
-	recordTTL              = flag.Int("recordttl", 300, "TTL for any DNS records created")
+	dnsTTL                 = flag.Int64("dnsttl", 300, "TTL for any DNS records created")
 	hostUpdateFreq         = flag.Int("hostupdate", 60, "How many seconds to sleep between updating the list of hosts from GCE")
 	dnsUpdateFreq          = flag.Int("dnsupdate", 60, "How many seconds to sleep between updating DNS records from the host-list")
-	dnsDomainName          = flag.String("domainname", "domain.com,", "The DNS zone to use (including trailing '.')")
+	dnsDomainName          = flag.String("domainname", "domain.com.", "The DNS domain to use (including trailing '.')")
+	dnsZoneName            = flag.String("zonename", "", "The DNS zone-ID to use (defaults to the domain-name)")
 )
 
 func init() {
 	// Parse the command-line arguments:
 	flag.Parse()
+
+	// Default the zonename to the domainname:
+	if *dnsZoneName == "" {
+		*dnsZoneName = *dnsDomainName
+	}
+
 }
 
 func main() {
@@ -42,6 +49,8 @@ func main() {
 		RoleMetadataKey:        *roleMetadataKey,
 		EnvironmentMetadataKey: *environmentMetadataKey,
 		DNSDomainName:          *dnsDomainName,
+		DNSZoneName:            *dnsZoneName,
+		DNSTTL:                 *dnsTTL,
 		HostInventory:          hostInventory,
 		HostInventoryMutex:     hostInventoryMutex,
 	}

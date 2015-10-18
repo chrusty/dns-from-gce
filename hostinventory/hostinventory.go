@@ -8,10 +8,10 @@ import (
 
 	types "github.com/chrusty/dns-from-gce/types"
 
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
+	context "golang.org/x/net/context"
+	google "golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v1"
-	"google.golang.org/cloud/compute/metadata"
+	metadata "google.golang.org/cloud/compute/metadata"
 )
 
 // Periodically populate the host-inventory:
@@ -35,7 +35,7 @@ func Updater(config *types.Config) {
 			continue
 		}
 
-		// Authenticate with GCE:
+		// Get a Compute service-object:
 		computeService, err := compute.New(client)
 		if err != nil {
 			log.Errorf("[hostInventoryUpdater] Failed to connecting to GCE! %v", err)
