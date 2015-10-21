@@ -51,14 +51,8 @@ func Updater(config *types.Config) {
 			log.Debugf("[hostInventoryUpdater] Found project-id (%v)", googleComputeProject)
 		}
 
-		// Get a "zones service":
-		zonesService := compute.NewZonesService(computeService)
-
-		// Prepare a zones.list() request:
-		zonesListCall := zonesService.List(googleComputeProject)
-
 		// Make the zones.list() call:
-		zonesList, err := zonesListCall.Do()
+		zonesList, err := computeService.Zones.List(googleComputeProject).Do()
 		if err != nil {
 			log.Errorf("[hostInventoryUpdater] Unable to make zones.list() call! (%s)", err)
 			continue
@@ -76,17 +70,11 @@ func Updater(config *types.Config) {
 			Environments: make(map[string]types.Environment),
 		}
 
-		// Get an "istances service":
-		instancesService := compute.NewInstancesService(computeService)
-
 		// Now check each zone:
 		for _, googleComputeZone := range zonesList.Items {
 
-			// Prepare an instances.list() request:
-			instancesListCall := instancesService.List(googleComputeProject, googleComputeZone.Name)
-
 			// Make the instances.list() call:
-			instanceList, err := instancesListCall.Do()
+			instanceList, err := computeService.Instances.List(googleComputeProject, googleComputeZone.Name).Do()
 			if err != nil {
 				log.Errorf("[hostInventoryUpdater] Unable to make instances.list() call! (%s)", err)
 				continue

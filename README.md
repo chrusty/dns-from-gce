@@ -38,5 +38,5 @@ Usage of ./dns-from-gce:
 Credentials can either be derived from a credentials file, or from instance permissions:
 * Credentials-file should be '~/.config/gcloud/application_default_credentials.json'
 * Instance permissions required:
-  * Compute.Read (to find the list of running instances)
-  * Still looking for the DNS update permissions
+  * Host-inventory (to find the list of running instances): "Compute.Read"
+  * DNS (to manage DNS record-sets): "https://www.googleapis.com/auth/ndev.clouddns.readwrite"

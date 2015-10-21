@@ -56,8 +56,14 @@ func Updater(config *types.Config) {
 				log.Debugf("[hostInventoryUpdater] Found project-id (%v)", googleComputeProject)
 			}
 
-			// Get a "changes service":
-			changesService := googledns.NewChangesService(dnsService)
+			// Get a list of pre-existing DNS records in this zone:
+			resourceRecordSetsList, err := dnsService.ResourceRecordSets.List(googleComputeProject, config.DNSZoneName).Do()
+			if err != nil {
+				log.Errorf("[dnsUpdater] Unable to make DNS ResourceRecordSets.List() call! (%s)", err)
+				continue
+			} else {
+				log.Debugf("[dnsUpdater] Found %v pre-existing DNS records", len(resourceRecordSetsList.Rrsets))
+			}
 
 			// Go through each environment:
 			for environmentName, environment := range config.HostInventory.Environments {
@@ -67,6 +73,23 @@ func Updater(config *types.Config) {
 				// Prepare a "change" (which is a list of records to add):
 				change := &googledns.Change{
 					Additions: []*googledns.ResourceRecordSet{},
+				}
+
+				// See if we already have a DNS entry:
+				for _, resourceRecordSet := range resourceRecordSetsList.Rrsets {
+
+					record, ok := environment.DNSRecords[resourceRecordSet.Name]
+					if ok {
+						// See if the record needs to be deleted and changed:
+						if len(record) == len(resourceRecordSet.Rrdatas) {
+							// Delete the record from the host-inventory (to prevent it from being created again):
+							log.Debugf("[dnsUpdater] Record %v already exists in DNS (%v) - no need to make it again", resourceRecordSet.Name, record)
+							delete(environment.DNSRecords, resourceRecordSet.Name)
+						} else {
+							// The record doesn't match, so we'll ask for it to be deleted:
+							change.Deletions = append(change.Deletions, resourceRecordSet)
+						}
+					}
 				}
 
 				// Now iterate over the host-inventory:
@@ -84,16 +107,17 @@ func Updater(config *types.Config) {
 
 				}
 
-				// Prepare a Create() request:
-				changesCreateCall := changesService.Create(googleComputeProject, config.DNSZoneName, change)
-
 				// Make the Create() call:
-				changeMade, err := changesCreateCall.Do()
-				if err != nil {
-					log.Errorf("[dnsUpdater] Unable to make DNS Create() call! (%s)", err)
-					continue
+				if len(change.Additions) > 0 || len(change.Deletions) > 0 {
+					changeMade, err := dnsService.Changes.Create(googleComputeProject, config.DNSZoneName, change).Do()
+					if err != nil {
+						log.Errorf("[dnsUpdater] Unable to make DNS Changes.Create() call! (%s)", err)
+						continue
+					} else {
+						log.Debugf("[dnsUpdater] Made %v changes to DNS zone (%v), status: %v", len(changeMade.Additions), googleComputeProject, changeMade.Status)
+					}
 				} else {
-					log.Debugf("[dnsUpdater] Made %v changes to DNS zone (%v), status: %v", len(changeMade.Additions), googleComputeProject, changeMade.Status)
+					log.Infof("[dnsUpdater] No changes to be made")
 				}
 
 			}
