@@ -1,8 +1,8 @@
 package dns
 
 import (
-	"time"
 	"fmt"
+	"time"
 
 	log "github.com/cihub/seelog"
 
@@ -69,8 +69,6 @@ func Updater(config *types.Config) {
 			// Go through each environment:
 			for environmentName, environment := range config.HostInventory.Environments {
 
-				log.Debugf("[dnsUpdater] Creating requests for the '%v' environment ...", environmentName)
-
 				// Prepare a "change" (which is a list of records to add):
 				change := &googledns.Change{
 					Additions: []*googledns.ResourceRecordSet{},
@@ -78,11 +76,10 @@ func Updater(config *types.Config) {
 
 				// See if we already have a DNS entry:
 				for _, resourceRecordSet := range resourceRecordSetsList.Rrsets {
-
 					record, ok := environment.DNSRecords[resourceRecordSet.Name]
 					if ok {
 						// See if the record needs to be deleted and changed:
-						if fmt.Sprintf("%v", record) == fmt.Sprintf("%v", Rrdatas) {
+						if fmt.Sprintf("%v", record) == fmt.Sprintf("%v", resourceRecordSet.Rrdatas) {
 							// Delete the record from the host-inventory (to prevent it from being created again):
 							log.Debugf("[dnsUpdater] Record %v already exists in DNS (%v) - no need to make it again", resourceRecordSet.Name, record)
 							delete(environment.DNSRecords, resourceRecordSet.Name)
@@ -94,11 +91,11 @@ func Updater(config *types.Config) {
 				}
 
 				// Now iterate over the host-inventory:
+				log.Debugf("[dnsUpdater] Creating requests for the '%v' environment ...", environmentName)
 				for dnsRecordName, dnsRecordValue := range environment.DNSRecords {
 
-					log.Debugf("[dnsUpdater] Record: %v => %v", dnsRecordName, dnsRecordValue)
-
 					// Prepare a resourceRecordSet:
+					log.Debugf("[dnsUpdater] Record: %v => %v", dnsRecordName, dnsRecordValue)
 					change.Additions = append(change.Additions, &googledns.ResourceRecordSet{
 						Name:    dnsRecordName,
 						Rrdatas: dnsRecordValue,
