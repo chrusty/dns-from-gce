@@ -2,6 +2,7 @@ package dns
 
 import (
 	"time"
+	"fmt"
 
 	log "github.com/cihub/seelog"
 
@@ -81,7 +82,7 @@ func Updater(config *types.Config) {
 					record, ok := environment.DNSRecords[resourceRecordSet.Name]
 					if ok {
 						// See if the record needs to be deleted and changed:
-						if len(record) == len(resourceRecordSet.Rrdatas) {
+						if fmt.Sprintf("%v", record) == fmt.Sprintf("%v", Rrdatas) {
 							// Delete the record from the host-inventory (to prevent it from being created again):
 							log.Debugf("[dnsUpdater] Record %v already exists in DNS (%v) - no need to make it again", resourceRecordSet.Name, record)
 							delete(environment.DNSRecords, resourceRecordSet.Name)
