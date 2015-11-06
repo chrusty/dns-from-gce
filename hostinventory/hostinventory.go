@@ -33,6 +33,8 @@ func Updater(config *types.Config) {
 		if err != nil {
 			log.Errorf("[hostInventoryUpdater] Unable to authenticate to GCE! (%s)", err)
 			continue
+		} else {
+			log.Debugf("[hostInventoryUpdater] Authenticated to GCE")
 		}
 
 		// Get a Compute service-object:
