@@ -17,9 +17,8 @@ import (
 // Periodically populate DNS using the host-inventory:
 func Updater(config *types.Config) {
 
-	log.Infof("[dnsUpdater] Started")
-
 	// Run forever:
+	log.Infof("[dnsUpdater] Started")
 	for {
 
 		// Sleep until the next run:

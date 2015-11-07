@@ -16,22 +16,14 @@ Populate a Google Cloud-DNS zone from the list of VM Instances in your GCE Proje
 
 ## Usage:
 ```
-$ ./dns-from-gce -h
 Usage of ./dns-from-gce:
-  -dnsttl int
-        TTL for any DNS records created (default 300)
-  -dnsupdate int
-        How many seconds to sleep between updating DNS records from the host-list (default 60)
-  -domainname string
-        The DNS domain to use (including trailing '.') (default "domain.com.")
-  -environmentkey string
-        Instance metadata key to derive the 'environment' from (default "environment")
-  -hostupdate int
-        How many seconds to sleep between updating the list of hosts from GCE (default 60)
-  -rolekey string
-        Instance metadata key to derive the 'role' from (default "role")
-  -zonename string
-        The DNS zone-ID to use (defaults to the domain-name)
+  -dnsttl=300: TTL for any DNS records created
+  -dnsupdate=60: How many seconds to sleep between updating DNS records from the host-list
+  -domainname="domain.com.": The DNS domain to use (including trailing '.')
+  -environmentkey="environment": Instance metadata key to derive the 'environment' from
+  -hostupdate=60: How many seconds to sleep between updating the list of hosts from GCE
+  -rolekey="role": Instance metadata key to derive the 'role' from
+  -zonename="": The DNS zone-ID to use (defaults to the domain-name)
 ```
 
 ## Credentials:
